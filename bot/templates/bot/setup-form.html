@@ -1,0 +1,17 @@
+{% extends 'bot/base.html' %}
+{% load i18n static bootstrap %}
+
+{% block content %}
+    <div class="col-md-8 col-md-offset-2 col-sm-12">
+        <form action="" method="post">
+             {% csrf_token %}
+            <h2> <small>Edit</small></h2>
+            {{ form|bootstrap }}
+            <button class="btn btn-raised btn-block btn-primary" type="submit"><i class="fa fa-save"></i> Save</button>
+            <br>
+            <br>
+            <br>
+        </form>
+    </div>
+
+{% endblock %}

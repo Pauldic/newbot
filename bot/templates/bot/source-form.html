@@ -1,0 +1,35 @@
+{% extends 'bot/base.html' %}
+{% load i18n static bootstrap %}
+
+{% block content %}
+    <div class="col-sm-4 col-sm-12">
+        <h3>News Sources</h3>
+        <ul>
+            {% if sources|length > 0 %}
+                {% for s in sources %}
+                    <li style="margin-left: -25px;"><a href="{{ s.source }}" target="_blank">{{ s }}</a> </li>
+                {% endfor %}
+            {% else %}
+                <p>No Feed Source!!!</p>
+            {% endif %}
+
+        </ul>
+    </div>
+    <div class="col-sm-8  col-sm-12">
+        <form action="" method="post">
+             {% csrf_token %}
+            {{ formset.management_form }}
+
+            {% for form in formset %}
+                 <fieldset> <legend>{{ form.instance }}:</legend>
+                    {{ form|bootstrap_horizontal }}
+                 </fieldset>
+            {% endfor %}
+            <button class="btn btn-raised btn-block btn-primary" type="submit"><i class="fa fa-save"></i> Save</button>
+            <br>
+            <br>
+            <br>
+        </form>
+    </div>
+
+{% endblock %}

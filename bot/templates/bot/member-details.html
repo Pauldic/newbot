@@ -1,0 +1,138 @@
+    {% extends 'bot/base.html' %}
+
+{% load i18n customising static %}
+
+{% block jumbotron %}{% endblock %}
+{% block content %}
+    <style>.pagination{width: 100%;}</style>
+    <div class="container">
+
+        <div class="row" style="margin-top: 80px">
+            <div class="col-sm-6">
+                <form action="" method="GET" id="search-form">{% csrf_token %}
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="search-query" name="q" value="{{ q|default:'' }}" placeholder="Search for message">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" id="search-button"><i class="fa fa-search"></i> </button>
+                        </span>
+                    </div><!-- /input-group -->
+                </form>
+            </div>
+        </div><!-- /.row -->
+
+
+        <table class="table" style="font-size: 12px;">
+            <thead>
+                <tr>
+                    <th>Identity</th>
+                    <th>Full Name </th>
+                    <th>Username</th>
+                    <th>Type</th>
+{#                    <th>Allowed?</th>#}
+{#                    <th>Entry</th>#}
+{#                    <th>Group</th>#}
+                    <th>Point</th>
+                    <th>Level</th>
+                    <th>Subscribed?</th>
+{#                    <th>Link</th>#}
+{#                    <th>Referee</th>#}
+{#                    <th>Referrals</th>#}
+{#                    <th>Rewarded</th>#}
+{#                    <th>Amount Due</th>#}
+{#                    <th>Category</th>#}
+{#                    <th>Enabled?</th>#}
+{#                    <th>Entry</th>#}
+                    <th>Action</th>
+            </thead>
+            <tbody>
+                {% for data in context %}
+                    <tr>
+                        <td>{{ data.member_id }}</td>
+                        <td><a href="https://telegram.me/{{ bot_username }}?start={{ data.link }}">{{ data.first_name }} {{ data.last_name|default:"" }}</a> </td>
+                        <td>{{ data.username }}</td>
+                        <td>{{ data.type }}</td>
+                        <td>{{ data.point }}</td>
+                        <td>{{ data.level }}</td>
+                        <td>{% if data.subscribed %}<i class="fa fa-check-circle text-success"></i>{% else %}<i class="fa fa-times-circle text-danger"></i>{% endif %} </td>
+{#                        <td>{% if data.is_blacklisted %}<i class="fa fa-times-circle text-danger"></i>{% else %}<i class="fa fa-check text-success"></i>{% endif %} </td>#}
+{#                        <td>{{ data.created }}</td>#}
+
+{#                        <td>{{ data.group.title }}</td>#}
+{#                        <td>{{ data.account }}</td>#}
+{#                        <td><a href="https://telegram.me/{{ bot_username }}?start={{ data.link }}">{{ data.link }}</a> </td>#}
+{#                        <td>{{ data.referee.first_name }} {{ data.referee.last_name|default:"" }}</td>#}
+{#                        <td>{{ data|member_count }}</td>#}
+{#                        <td>{{ data.reward }}</td>#}
+{#                        <td>{{ data|due_amount }}</td>#}
+                        <td>
+                            {% if data.type == "Editor" %}
+                                <a data-action='promote' class="btn btn-warning btn-sm" href="{% url 'core:member-demote' data.member_id %}" >Demote Editor</a>
+                            {% else %}
+                                <a data-action='demote' class="btn btn-primary btn-sm" href="{% url 'core:member-promote' data.member_id %}" >Promote To Editor</a>
+                            {% endif %}
+{#                            <a href="javascipt:;" data-action='reward' class="btn btn-primary btn-sm" data-mid="{{ data.member_id }}" data-gid="{{ data.group.id }}" >Reward</a>#}
+{#                            {% if data.is_blacklisted %}#}
+{#                                <a href="{% url 'core:i-whitelist' data.id %}" class="btn btn-success btn-sm">Allow</a>#}
+{#                            {% else %}#}
+{#                                <a href="{% url 'core:i-blacklist' data.id %}" class="btn btn-warning btn-sm ">Block</a>#}
+{#                            {% endif %}#}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+{#        {{ context|paginate_to:"10,True" }}#}
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script src="{% static 'bootstrap3-dialog/js/bootstrap-dialog.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'bootstrap3-dialog/css/bootstrap-dialog.min.css' %}" />
+
+    <script>
+        $(document).ready(function () {
+            $("#search-form").submit(function (d) {
+                d.preventDefault();
+                location.href = "./?q="+$("#search-query").val();
+            });
+
+
+            $("a[data-action='reward']").click(function (e) {
+                url = "{% url 'core:member-reward' '0000' '0001' %}".replace("/0000", "/"+$(this).data("gid"));
+                console.log(url)
+                url = url.replace('/0001', "/"+$(this).data("mid"))
+                console.log(url)
+                BootstrapDialog.show({
+                      title: "<i class='fa fa-edit'></i> Reward Member",
+                      message: "<input type='number' name='reward' id='reward' value='' class='form-control' >",
+                      buttons: [{
+                            label: 'Cancel',
+                            action: function (dialog) {dialog.close();}
+                        }, {
+                            label: 'Reward',
+                            cssClass: 'btn-primary',
+                            action: function (dialog) {
+                                processFeed(url, {'reward': $("#reward").val()}, 'Processing Your Request...', false, 'POST', function (d) {
+                                    if (d.type == 'Success') {
+                                        BootstrapDialog.alert({
+                                            title: "Server Response",
+                                            message: d.msg,
+                                            onhide: function () {
+                                                location = '{% url 'core:member-list' %}'
+                                            }
+                                        });
+                                    } else {
+                                        BootstrapDialog.alert(d.msg)
+                                    }
+                                }, function (d) {
+                                    BootstrapDialog.alert(d.responseText)
+                                });
+                            }
+                        }]
+                    })
+            });
+        });
+    </script>
+{% endblock %}

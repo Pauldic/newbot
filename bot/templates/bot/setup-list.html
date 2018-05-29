@@ -1,0 +1,67 @@
+{% extends 'bot/base.html' %}
+
+{% load i18n paginate %}
+
+{% block content %}
+    <style>.pagination{width: 100%;}</style>
+    <div class="container">
+
+        <div class="row">
+            <div class="col-sm-6">
+                <form action="" method="GET" id="search-form">{% csrf_token %}
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="search-query" name="q" value="{{ q|default:'' }}" placeholder="Search for message">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" id="search-button"><i class="fa fa-search"></i> </button>
+                        </span>
+                    </div><!-- /input-group -->
+                </form>
+            </div>
+        </div><!-- /.row -->
+
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Note</th>
+                    <th>Coin</th>
+                    <th>Total Bouns</th>
+                    <th>Bonus Per Referral</th>
+                    <th>Maxi User Referral</th>
+                    <th>Cycle</th>
+                    <th>Start</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in context %}
+                    <tr>
+                        <td> <a href="{% url 'core:bot-setup-edit' data.id %}">{{ data.group }}</a> </td>
+                        <td> {{ data.note }}</td>
+                        <td> {{ data.coin_name }}</td>
+                        <td> {{ data.total_bonus }}</td>
+                        <td> {{ data.bonus_per_referral }}</td>
+                        <td> {{ data.maxi_user_referral }}</td>
+                        <td> {{ data.cycle }}</td>
+                        <td> {{ data.start }}</td>
+                        <td> {{ data.created }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+{#        {{ context|paginate_to:"10,True" }}#}
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            $("#search-form").submit(function (d) {
+                d.preventDefault();
+                location.href = "./?q="+$("#search-query").val();
+            })
+        });
+    </script>
+{% endblock %}
